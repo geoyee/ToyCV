@@ -33,3 +33,4 @@ make && make install
 ## 参考
 
 - [matrix](https://github.com/Xtinc/matrix)
+- [纯C++实现24位bmp格式图片的读取和修饰](https://blog.csdn.net/m0_62505136/article/details/121153508)
