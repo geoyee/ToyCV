@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "bmp.h"
 
 #undef DLL_SPEC
 #if defined (WIN32)
@@ -14,7 +15,7 @@
 	#define DLL_SPEC
 #endif
 
-namespace tcv {
-	// 读取JPEG
-	DLL_SPEC char* readJPEG(const std::string& filePath);
+namespace tcv
+{
+	DLL_SPEC tcv::RGBTriple* imread(const char* fileName);
 }
