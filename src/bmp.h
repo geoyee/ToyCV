@@ -4,13 +4,13 @@
 
 #undef DLL_SPEC
 #if defined (WIN32)
-	#if defined (DLL_DEFINE)
-		#define DLL_SPEC _declspec(dllexport)
-	#else
-		#define DLL_SPEC _declspec(dllimport)
-	#endif
+#if defined (DLL_DEFINE)
+#define DLL_SPEC _declspec(dllexport)
 #else
-	#define DLL_SPEC
+#define DLL_SPEC _declspec(dllimport)
+#endif
+#else
+#define DLL_SPEC
 #endif
 
 namespace tcv
@@ -47,17 +47,17 @@ namespace tcv
 	{
 	private:
 		const int TYPE = 19778;
-		int offset;  // ĞĞÎ²µÄ¿ÕÏ¶
-		RGBTriple* surface;  // ´æÍ¼Æ¬ÑÕÉ«Êı¾İµÄÊı×é
-		BmpFileHeader fileHeader;  // ÎÄ¼şÍ·
-		BmpFileInFoHeader fileInFoHeader;  // Êı¾İÍ·
+		int offset;  // è¡Œå°¾çš„ç©ºéš™
+		RGBTriple* surface;  // å­˜å›¾ç‰‡é¢œè‰²æ•°æ®çš„æ•°ç»„
+		BmpFileHeader fileHeader;  // æ–‡ä»¶å¤´
+		BmpFileInFoHeader fileInFoHeader;  // æ•°æ®å¤´
 
 	public:
-		// ¶ÁÎÄ¼ş
+		// è¯»æ–‡ä»¶
 		void read(const char* fileName);
-		// Ğ´ÎÄ¼ş
+		// å†™æ–‡ä»¶
 		void write(void (*myMethod)(int, int, RGBTriple*), const char* outFileName);
-		// »ñÈ¡Êı¾İ
+		// è·å–æ•°æ®
 		RGBTriple* array();
 	};
 }

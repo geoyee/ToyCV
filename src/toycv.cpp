@@ -1,5 +1,5 @@
-﻿#if defined (WIN32)
-	#define DLL_DEFINE
+#if defined (WIN32)
+#define DLL_DEFINE
 #endif
 
 #include "toycv.h"
