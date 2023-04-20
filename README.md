@@ -1,6 +1,6 @@
 <div align="center">
   <article style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <img src="./docs/imgs/toycv.svg"/>
+      <img src="https://user-images.githubusercontent.com/71769312/233272545-4339dbac-aa50-453a-a0dc-3d103960003d.svg"/>
       <h1 style="width: 100%; text-align: center;">ToyCV</h1>
   </article>
 </div>
