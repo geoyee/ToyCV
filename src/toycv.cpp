@@ -1,4 +1,8 @@
-﻿#include "toycv.h"
+﻿#if defined (WIN32)
+	#define DLL_DEFINE
+#endif
+
+#include "toycv.h"
 
 char* tcv::readJPEG(const std::string& filePath)
 {

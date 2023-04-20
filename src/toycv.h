@@ -3,9 +3,18 @@
 #include <iostream>
 #include <fstream>
 
-#define Interface __declspec(dllexport)
+#undef DLL_SPEC
+#if defined (WIN32)
+	#if defined (DLL_DEFINE)
+		#define DLL_SPEC _declspec(dllexport)
+	#else
+		#define DLL_SPEC _declspec(dllimport)
+	#endif
+#else
+	#define DLL_SPEC
+#endif
 
 namespace tcv {
 	// 读取JPEG
-	Interface char* readJPEG(const std::string& filePath);
+	DLL_SPEC char* readJPEG(const std::string& filePath);
 }
