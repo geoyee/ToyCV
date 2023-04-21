@@ -1,6 +1,6 @@
 SET(PORJ_NAME toycv)
 SET(LIB_SRC toycv.cpp bmp.cpp)
-SET(LIB_HEAD toycv.h bmp.h)
+SET(LIB_HEAD toycv.h bmp.h img.hpp)
 
 SET(OBJ_NAME ${PORJ_NAME}_obj)
 ADD_LIBRARY(${OBJ_NAME} OBJECT ${LIB_SRC})
