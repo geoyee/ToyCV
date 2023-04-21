@@ -46,14 +46,14 @@ namespace tcv
 		tcv::Shape _shp;  // 图像形状
 		T** _data;		  // 存放数据
 
-		template<typename T, int C>
-		friend std::ostream& operator<<(std::ostream& os, const Img<T, C>& img)
+		template<typename TT, int CC>
+		friend std::ostream& operator<<(std::ostream& os, const Img<TT, CC>& img)
 		{
 			os << "Shape (" << img._shp.height << ", "
 				<< img._shp.width << ", "
 				<< img._shp.channel << ")" << "\n";
 			os << "Array [\n";
-			for (int i = 0; i < C; ++i)
+			for (int i = 0; i < CC; ++i)
 			{
 				os << "[\n";
 				for (int c = 0; c < img._shp.height; ++c)
