@@ -90,7 +90,7 @@ namespace tcv
 				throw std::range_error("[Error] Invalid im's size or channels.");
 			_height = height;
 			_width = width;
-			_channels = imCh;
+			_channels = C;
 			_data = new T * [_channels];
 			_refNum = 1;
 			for (int i = 0; i < _channels; ++i)
@@ -249,7 +249,7 @@ namespace tcv
 				os << "\t\t";
 				for (int r = 0; r < im._width; ++r)
 				{
-					if (strcmp(im.type(), "unsigned char") == 0)
+					if (strcmp(im.type(), typeid(type::U8).name()) == 0)
 						os << int(im.at(c, r, i)) << " ";
 					else
 						os << im.at(c, r, i) << " ";
