@@ -1,2 +1,1 @@
 #define WIN32 @WIN32@
-#define DLL_DEFINE 1
