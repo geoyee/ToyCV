@@ -85,7 +85,8 @@ namespace tcv
 			size_t imCh = MUSIZE(data) / sizeof(*data);
 			size_t imfLen = MUSIZE(*data) / sizeof(**data);
 			size_t fLen = height * width;
-			if (C != imCh || fLen != imfLen)
+			// if (C != imCh || fLen != imfLen)
+			if (C > imCh || fLen > imfLen)
 				throw std::range_error("[Error] Invalid im's size or channels.");
 			_height = height;
 			_width = width;
