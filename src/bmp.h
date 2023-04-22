@@ -22,7 +22,7 @@ namespace tcv
 		unsigned char red;
 	};
 
-#pragma pack(2)
+//#pragma pack(2)
 	struct DLL_SPEC BmpFileHeader
 	{
 		unsigned short bfType;

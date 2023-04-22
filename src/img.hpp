@@ -1,10 +1,16 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 #include <exception>
 
+#define WIN32
+#define DLL_DEFINE
+
 #undef DLL_SPEC
+#undef MUSIZE
 #if defined (WIN32)
+#define MUSIZE(x) _msize(x)
 #if defined (DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
 #else
@@ -12,179 +18,249 @@
 #endif
 #else
 #define DLL_SPEC
+#define MUSIZE(x) malloc_usable_size(x)
 #endif
 
 namespace tcv
 {
-	struct DLL_SPEC Shape
+	// 类型定义
+	namespace type
 	{
-		size_t height;  // 高度
-		size_t width;   // 宽度
-		int channel;    // 通道数
+		typedef unsigned char U8;        // [0             , 255          )
+		typedef unsigned int S8;         // [-128          , 127          )
+		typedef unsigned short int U16;  // [0             , 65535        )
+		typedef short int S16;           // [-32768        , 32767        )
+		typedef int S32;                 // [-2147483648   , 2147483647   )
+		typedef float F32;               // [1.18*10^{-38} , 3.40*10^{38} )
+		typedef double F64;              // [2.23*10^{-308}, 1.79*10^{308})
+	}
 
-		friend std::ostream& operator<<(std::ostream& os, const Shape& shp)
-		{
-			os << "Shape (" << shp.height << ", "
-				<< shp.width << ", "
-				<< shp.channel << ")";
-			return os;
-		}
-
-		Shape()
-			: height(0), width(0), channel(0) { }
-		Shape(size_t h, size_t w, int c)
-			: height(h), width(w), channel(c) { }
-		Shape(const Shape& shp)
-			: height(shp.height), width(shp.width), channel(shp.channel) { }
-		~Shape() { }
-	};
-
-	template <typename T, int C>
+	// 图像类
+	template <typename T, size_t C>
 	class DLL_SPEC Img
 	{
 	private:
-		tcv::Shape _shp;  // 图像形状
-		T** _data;		  // 存放数据
+		size_t _height;    // 图像高度
+		size_t _width;     // 图像宽度
+		size_t _channels;  // 通道数
+		T** _data;         // 存放数据
+		int _refNum;       // 引用次数
 
-		template<typename TT, int CC>
-		friend std::ostream& operator<<(std::ostream& os, const Img<TT, CC>& img)
+		// 打印数据
+		template<typename U, size_t N>
+		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Img<U, N>& im)
 		{
-			os << "Shape (" << img._shp.height << ", "
-				<< img._shp.width << ", "
-				<< img._shp.channel << ")" << "\n";
-			os << "Array [\n";
-			for (int i = 0; i < CC; ++i)
+			os << "Shape: (" << im._height << ", " << im._width << ", "
+				<< im._channels << ")\n";
+			os << "Type: (" << im.type() << ")\n";
+			os << "Array: [\n";
+			for (int i = 0; i < im._channels; ++i)
 			{
-				os << "[\n";
-				for (int c = 0; c < img._shp.height; ++c)
+				os << "\tBand" << i << " [\n";
+				for (int c = 0; c < im._height; ++c)
 				{
-					for (int r = 0; r < img._shp.width; ++r)
-						os << float(img.pixAt(c, r, i)) << " ";
+					os << "\t\t";
+					for (int r = 0; r < im._width; ++r)
+					{
+						if (strcmp(im.type(), "unsigned char") == 0)
+							os << int(im.at(c, r, i)) << " ";
+						else
+							os << im.at(c, r, i) << " ";
+					}
 					os << "\n";
 				}
-				os << "]\n";
+				os << "\t]\n";
 			}
 			os << "]";
 			return os;
 		}
+		////TODO: 比较图像
+		//template<typename U, size_t N>
+		//DLL_SPEC bool operator==(const Img& im1, const Img& im2);
 
 	public:
+		// 构造函数
 		Img()
-			: _shp(Shape(0, 0, C)), _data(nullptr) { }
-		Img(size_t height, size_t width)
-			: _shp(Shape(height, width, C)), _data(new T* [C])
+			: _height(0), _width(0), _channels(C), _data(new T* [C]), _refNum(1)
 		{
-			for (int i = 0; i < C; ++i)
-				_data[i] = new T[height * width];
+			for (int i = 0; i < _channels; ++i)
+				_data[i] = nullptr;
 		}
-		Img(const tcv::Shape& shp)
-			: _shp(Shape(shp.height, shp.width, C))
+		Img(size_t height, size_t width)
+			: _height(height), _width(width), _channels(C),
+			_data(new T* [C]), _refNum(1)
 		{
-			if (shp.channel != C)
-				std::cerr << "[Warning] `shp` channel not equal `C`, \
-							  `C` has been forcibly used." << std::endl;
-			_data = new T * [C];
-			for (int i = 0; i < C; ++i)
-				_data[i] = new T[height * width];
+			for (int i = 0; i < _channels; ++i)
+				_data[i] = new T[_height * _width];
 		}
 		Img(size_t height, size_t width, T value)
-			: _shp(Shape(height, width, C)), _data(new T* [C])
+			: _height(height), _width(width), _channels(C),
+			_data(new T* [C]), _refNum(1)
 		{
-			for (int i = 0; i < C; ++i)
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
 			{
-				_data[i] = new T[height * width];
-				for (int j = 0; j < height * width; ++j)
+				_data[i] = new T[fLen];
+				for (int j = 0; j < fLen; ++j)
 					_data[i][j] = value;
 			}
 		}
-		Img(const tcv::Shape& shp, T value)
-			: _shp(Shape(shp.height, shp.width, C))
+		Img(size_t height, size_t width, T** data)
 		{
-			_data = new T * [C];
-			if (shp.channel != C)
-				std::cerr << "[Warning] `shp` channel not equal `C`, \
-							  `C` has been forcibly used." << std::endl;
-			for (int i = 0; i < C; ++i)
+			size_t imCh = MUSIZE(data) / sizeof(*data);
+			size_t imfLen = MUSIZE(*data) / sizeof(**data);
+			size_t fLen = height * width;
+			if (C != imCh || fLen != imfLen)
+				throw std::range_error("[Error] Invalid im's size or channels.");
+			_height = height;
+			_width = width;
+			_channels = imCh;
+			_data = new T * [_channels];
+			_refNum = 1;
+			for (int i = 0; i < _channels; ++i)
 			{
-				_data[i] = new T[height * width];
-				for (int j = 0; j < height * width; ++j)
-					_data[i][j] = value;
+				_data[i] = new T[fLen];
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = data[i][j];
 			}
 		}
 		Img(const Img& im)
 		{
-			if (im._shp.channel != C)
-				throw std::domain_error("[Error] `im` channels not equal `C`.");
-			_shp = im._shp;
-			_data = new T * [C];
-			for (int i = 0; i < C; ++i)
+			if (im._channels != C)
+				throw std::logic_error(
+					"[Error] Invalid im's channels.");
+			_height = im._height;
+			_width = im._width;
+			_channels = im._channels;
+			_data = new T * [_channels];
+			_refNum = 1;
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
 			{
-				_data[i] = new T[_shp.height * _shp.width];
-				for (int j = 0; j < _shp.height * _shp.width; ++j)
+				_data[i] = new T[fLen];
+				for (int j = 0; j < fLen; ++j)
 					_data[i][j] = im._data[i][j];
 			}
+			im._refNum++;
 		}
+		// 析构函数
 		~Img()
 		{
-			if (_data != nullptr)
+			if (_data != nullptr && --_refNum == 0)
 			{
-				for (int i = 0; i < C; ++i)
+				for (int i = 0; i < _channels; ++i)
 					delete[] _data[i];
 				delete[] _data;
 			}
 		}
-		// 获取形状
-		tcv::Shape shape() { return _shp; }
-		size_t height() { return _shp.height; }
-		size_t width() { return _shp.width; }
-		size_t channel() { return _shp.channel; }
-		// 获取数据
-		T** data() { return _data; }
-		T* matAt(int ci)
+		// 赋值操作
+		Img& operator=(const Img& im)
 		{
-			if (ci < 0 || ci >= C)
-				throw std::out_of_range(
-					"[Error] `ci` is less than 0 or greater than `C`.");
-			return _data[ci];
+			if (this != &im)
+			{
+				if (_data != nullptr && --_refNum == 0)
+				{
+					for (int i = 0; i < _channels; ++i)
+						delete[] _data[i];
+					delete[] _data;
+				}
+				_channels = im._channels;
+				return new Img(im);
+			}
+			return *this;
 		}
-		T* chsAt(size_t col, size_t row)
+
+		//// TODO: 操作符重载
+		//void operator+(const Img& im) { }
+		//void operator+(T val) { }
+		//void operator-(const Img& im) { }
+		//void operator-(T val) { }
+		//void operator*(const Img& im) { }
+		//void operator*(T val) { }
+		//void operator/(const Img& im) { }
+		//void operator/(T val) { }
+
+		// 初始化
+		void init(size_t height, size_t width)
 		{
-			if (col < 0 || col >= _shp.height || row < 0 || row >= _shp.width)
-				throw std::out_of_range(
-					"[Error] `col` or `row` out of range.");
-			T* chs = new T[C];
-			for (int i = 0; i < C; ++i)
-				chs[i] = _data[i][col * _shp.width + row];
-			return chs;
+			_height = height;
+			_width = width;
+			for (int i = 0; i < _channels; ++i)
+			{
+				if (_data[i] != nullptr)
+					delete[] _data[i];
+				_data[i] = new T[_height * _width];
+			}
 		}
-		T pixAt(size_t col, size_t row, int ci) const
+		// 获取宽度
+		size_t height() const { return _height; }
+		// 获取高度
+		size_t width() const { return _width; }
+		// 获取通道数
+		size_t channels() const { return _channels; }
+		// 获取数据类型
+		const char* type() const { return typeid(T).name(); }
+		// 获取数据副本
+		T** data(size_t ch = NULL) const
 		{
-			if (col < 0 || col >= _shp.height || row < 0 || row >= _shp.width || \
-				ci < 0 || ci >= C)
-				throw std::out_of_range(
-					"[Error] `col` or `row` or `ci` out of range.");
-			return _data[ci][col * _shp.width + row];
+			size_t fLen = _height * _width;
+			T** mats;
+			if (ch == NULL)
+			{
+				mats = new T * [_channels];
+				for (int i = 0; i < _channels; ++i)
+				{
+					mats[i] = new T[fLen];
+					for (int j = 0; j < fLen; ++j)
+						mats[i][j] = _data[i][j];
+				}
+			}
+			else
+			{
+				if (ch < 0 || ch >= _channels)
+					throw std::out_of_range("[Error] Invalid `ch`.");
+				mats = new T * [1];
+				mats[0] = new T[fLen];
+				for (int i = 0; i < fLen; ++i)
+					mats[0][i] = _data[ch][i];
+			}
+			return mats;
 		}
-		T& pixAt(size_t col, size_t row, int ci)
+		// 获取某个像素值，不可修改
+		T at(size_t col, size_t row, size_t ch) const
 		{
-			if (col < 0 || col >= _shp.height || row < 0 || row >= _shp.width || \
-				ci < 0 || ci >= C)
-				throw std::out_of_range(
-					"[Error] `col` or `row` or `ci` out of range.");
-			return _data[ci][col * _shp.width + row];
+			if (col < 0 || col >= _height || row < 0 || row >= _width || \
+				ch < 0 || ch >= _channels)
+				throw std::out_of_range("[Error] Invalid `col` or `row` or `ch`.");
+			return _data[ch][col * _width + row];
+		}
+		// 获取某个像素值，可修改
+		T& at(size_t col, size_t row, size_t ch)
+		{
+			if (col < 0 || col >= _height || row < 0 || row >= _width || \
+				ch < 0 || ch >= _channels)
+				throw std::out_of_range("[Error] Invalid `col` or `row` or `ch`.");
+			return _data[ch][col * _width + row];
+		}
+
+		//// TODO: 统计方法
+		//void stateMinMax(double* min, double* max) { }
+		//void stateMeanStd(double* mean, double* std) { }
+
+		// 新建等尺寸全0图像
+		static Img& zerosLike(const Img& im)
+		{
+			return new Img(im._height, im._width, 0);
+		}
+		// 新建等尺寸全1图像
+		static Img& onesLike(const Img& im)
+		{
+			return new Img(im._height, im._width, 1);
 		}
 	};
 
-	// 图像类型
-	// S|U|F --> 有符号整型|无符号整型|单精度浮点型
-	// 1|3|4 --> 单通道图像|RGB彩色图像|RGBA带透明度彩色图像
-	typedef Img<unsigned char, 1> ImgU8C1;
-	typedef Img<unsigned char, 3> ImgU8C3;
-	typedef Img<unsigned char, 4> ImgU8C4;
-	typedef Img<unsigned int, 1> ImgS8C1;
-	typedef Img<unsigned int, 3> ImgS8C3;
-	typedef Img<unsigned int, 4> ImgS8C4;
-	typedef Img<float, 1> ImgF8C1;
-	typedef Img<float, 3> ImgF8C3;
-	typedef Img<float, 4> ImgF8C4;
+	// 预定义常规图像
+	typedef Img<type::U8, 1> ImgGray;
+	typedef Img<type::U8, 3> ImgRGB;
+	typedef Img<type::U8, 4> ImgRGBA;
 }
