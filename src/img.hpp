@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include "cpconfig.h"
 
 #undef DLL_SPEC
 #undef MUSIZE
@@ -15,6 +16,7 @@
 #endif
 #else
 #define DLL_SPEC
+#include <malloc.h>
 #define MUSIZE(x) malloc_usable_size(x)
 #endif
 
@@ -37,43 +39,18 @@ namespace tcv
 	class DLL_SPEC Img
 	{
 	private:
-		size_t _height;    // 图像高度
-		size_t _width;     // 图像宽度
-		size_t _channels;  // 通道数
-		T** _data;         // 存放数据
-		int _refNum;       // 引用次数
+		size_t _height;       // 图像高度
+		size_t _width;        // 图像宽度
+		size_t _channels;     // 通道数
+		T** _data;            // 存放数据
+		mutable int _refNum;  // 引用计数
 
 		// 打印数据
 		template<typename U, size_t N>
-		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Img<U, N>& im)
-		{
-			os << "Shape: (" << im._height << ", " << im._width << ", "
-				<< im._channels << ")\n";
-			os << "Type: (" << im.type() << ")\n";
-			os << "Array: [\n";
-			for (int i = 0; i < im._channels; ++i)
-			{
-				os << "\tBand" << i << " [\n";
-				for (int c = 0; c < im._height; ++c)
-				{
-					os << "\t\t";
-					for (int r = 0; r < im._width; ++r)
-					{
-						if (strcmp(im.type(), "unsigned char") == 0)
-							os << int(im.at(c, r, i)) << " ";
-						else
-							os << im.at(c, r, i) << " ";
-					}
-					os << "\n";
-				}
-				os << "\t]\n";
-			}
-			os << "]";
-			return os;
-		}
+		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Img<U, N>& im);
 		////TODO: 比较图像
 		//template<typename U, size_t N>
-		//DLL_SPEC bool operator==(const Img& im1, const Img& im2);
+		//DLL_SPEC friend bool operator==(const Img& im1, const Img& im2);
 
 	public:
 		// 构造函数
@@ -124,8 +101,7 @@ namespace tcv
 		Img(const Img& im)
 		{
 			if (im._channels != C)
-				throw std::logic_error(
-					"[Error] Invalid im's channels.");
+				throw std::logic_error("[Error] Invalid im's channels.");
 			_height = im._height;
 			_width = im._width;
 			_channels = im._channels;
@@ -255,6 +231,34 @@ namespace tcv
 			return new Img(im._height, im._width, 1);
 		}
 	};
+
+	template<typename U, size_t N>
+	DLL_SPEC inline std::ostream& operator<<(std::ostream& os, const Img<U, N>& im)
+	{
+		os << "Shape: (" << im._height << ", " << im._width << ", "
+			<< im._channels << ")\n";
+		os << "Type: (" << im.type() << ")\n";
+		os << "Array: [\n";
+		for (int i = 0; i < im._channels; ++i)
+		{
+			os << "\tBand" << i + 1 << " [\n";
+			for (int c = 0; c < im._height; ++c)
+			{
+				os << "\t\t";
+				for (int r = 0; r < im._width; ++r)
+				{
+					if (strcmp(im.type(), "unsigned char") == 0)
+						os << int(im.at(c, r, i)) << " ";
+					else
+						os << im.at(c, r, i) << " ";
+				}
+				os << "\n";
+			}
+			os << "\t]\n";
+		}
+		os << "]";
+		return os;
+	}
 
 	// 预定义常规图像
 	typedef Img<type::U8, 1> ImgGray;
