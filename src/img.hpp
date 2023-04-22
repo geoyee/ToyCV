@@ -4,9 +4,6 @@
 #include <string>
 #include <exception>
 
-#define WIN32
-#define DLL_DEFINE
-
 #undef DLL_SPEC
 #undef MUSIZE
 #if defined (WIN32)
@@ -201,11 +198,11 @@ namespace tcv
 		// 获取数据类型
 		const char* type() const { return typeid(T).name(); }
 		// 获取数据副本
-		T** data(size_t ch = NULL) const
+		T** data(size_t ch = -1) const
 		{
 			size_t fLen = _height * _width;
 			T** mats;
-			if (ch == NULL)
+			if (ch == -1)
 			{
 				mats = new T * [_channels];
 				for (int i = 0; i < _channels; ++i)
