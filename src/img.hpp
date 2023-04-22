@@ -3,11 +3,13 @@
 #include <iostream>
 #include <cstring>
 #include <exception>
+#include <malloc.h>
 #include "cpconfig.h"
 
 #undef DLL_SPEC
 #undef MUSIZE
 #if defined (WIN32)
+#define DLL_DEFINE
 #define MUSIZE(x) _msize(x)
 #if defined (DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
@@ -16,7 +18,6 @@
 #endif
 #else
 #define DLL_SPEC
-#include <malloc.h>
 #define MUSIZE(x) malloc_usable_size(x)
 #endif
 
