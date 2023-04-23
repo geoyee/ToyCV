@@ -5,9 +5,9 @@
   </article>
 </div>
 
-ToyCV是一个无第三方依赖库的C++玩具图像软件库，只能进行简单的图像处理。作为我在学习C++和CMake等工具的过程中结合实际进行的练习。 
+ToyCV是一个无第三方库依赖的C++图像处理玩具库（除了拿来玩没啥用），作为我在学习C++和CMake等工具的过程中的练习项目。 这个自我感觉还不错的LOGO也来自学习[Inkscape](https://gitlab.com/inkscape/inkscape)的过程中自己画的。
 
-## 编译使用
+## 😋编译使用
 
 1. 克隆项目：
 
@@ -17,11 +17,11 @@ git clone https://github.com/geoyee/ToyCV.git
 
 - Windows
 
-目前的在Visual Studio已经支持了CMake，可以在Visual Studio加载项目，对根目录的`CMakeLists.txt`右键生成和安装。
+目前的在Visual Studio已经支持了CMake，可以在Visual Studio加载项目，对根目录的`CMakeLists.txt`右键生成和安装即可，默认安装在`./out/install`下。
 
 - Linux
 
-可以使用CMake进行安装：
+可以使用CMake进行安装，目前只在WSL2下进行过测试，过程如下：
 
 ``` shell
 cd ToyCV
@@ -30,7 +30,7 @@ cmake -DCMAKE_INSTALL_PREFIX=<安装路径> ..
 make && make install
 ```
 
-## 参考
+## 🤔 参考
 
-- [matrix](https://github.com/Xtinc/matrix)
 - [纯C++实现24位bmp格式图片的读取和修饰](https://blog.csdn.net/m0_62505136/article/details/121153508)
+

@@ -55,14 +55,14 @@ namespace tcv
 
 	public:
 		// 构造函数
-		Img(size_t height, size_t width)
+		Img<T, C>(size_t height, size_t width)
 			: _height(height), _width(width), _channels(C),
 			_data(new T* [C]), _refNum(1)
 		{
 			for (int i = 0; i < _channels; ++i)
 				_data[i] = new T[_height * _width];
 		}
-		Img(size_t height, size_t width, T value)
+		Img<T, C>(size_t height, size_t width, T value)
 			: _height(height), _width(width), _channels(C),
 			_data(new T* [C]), _refNum(1)
 		{
@@ -74,7 +74,7 @@ namespace tcv
 					_data[i][j] = value;
 			}
 		}
-		Img(size_t height, size_t width, T** data)
+		Img<T, C>(size_t height, size_t width, T** data)
 		{
 			size_t imCh = MUSIZE(data) / sizeof(*data);
 			size_t imfLen = MUSIZE(*data) / sizeof(**data);
@@ -96,7 +96,7 @@ namespace tcv
 			}
 		}
 		// 复制构造函数，深拷贝
-		Img(const Img<T, C>& im)
+		Img<T, C>(const Img<T, C>& im)
 		{
 			if (im._channels != C)
 				throw std::logic_error("[Error] Invalid im's channels.");
@@ -116,7 +116,7 @@ namespace tcv
 			}
 		}
 		// 析构函数
-		~Img()
+		~Img<T, C>()
 		{
 			if (--_refNum == 0)
 			{
