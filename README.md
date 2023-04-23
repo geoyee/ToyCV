@@ -30,7 +30,7 @@ cmake -DCMAKE_INSTALL_PREFIX=<安装路径> ..
 make && make install
 ```
 
-## 🤔 参考
+## 🤔参考
 
 - [纯C++实现24位bmp格式图片的读取和修饰](https://blog.csdn.net/m0_62505136/article/details/121153508)
 
