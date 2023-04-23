@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include <exception>
+#include <limits>
 #include <malloc.h>
 #include "cpconfig.h"
 
@@ -48,19 +50,11 @@ namespace tcv
 
 		// 打印数据
 		template<typename U, size_t N>
-		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Img<U, N>& im);
-		////TODO: 比较图像
-		//template<typename U, size_t N>
-		//DLL_SPEC friend bool operator==(const Img& im1, const Img& im2);
+		DLL_SPEC friend std::ostream& operator<<(
+			std::ostream& os, const Img<U, N>& im);
 
 	public:
 		// 构造函数
-		Img()
-			: _height(0), _width(0), _channels(C), _data(new T* [C]), _refNum(1)
-		{
-			for (int i = 0; i < _channels; ++i)
-				_data[i] = nullptr;
-		}
 		Img(size_t height, size_t width)
 			: _height(height), _width(width), _channels(C),
 			_data(new T* [C]), _refNum(1)
@@ -85,14 +79,15 @@ namespace tcv
 			size_t imCh = MUSIZE(data) / sizeof(*data);
 			size_t imfLen = MUSIZE(*data) / sizeof(**data);
 			size_t fLen = height * width;
-			// if (C != imCh || fLen != imfLen)
-			if (C > imCh || fLen > imfLen)
-				throw std::range_error("[Error] Invalid im's size or channels.");
+			if (C > imCh)
+				throw std::range_error("[Error] Invalid im's channels.");
+			if (fLen > imfLen)
+				throw std::range_error("[Error] Invalid im's size.");
 			_height = height;
 			_width = width;
 			_channels = C;
-			_data = new T * [_channels];
 			_refNum = 1;
+			_data = new T * [_channels];
 			for (int i = 0; i < _channels; ++i)
 			{
 				_data[i] = new T[fLen];
@@ -100,72 +95,133 @@ namespace tcv
 					_data[i][j] = data[i][j];
 			}
 		}
-		Img(const Img& im)
+		// 复制构造函数，深拷贝
+		Img(const Img<T, C>& im)
 		{
 			if (im._channels != C)
 				throw std::logic_error("[Error] Invalid im's channels.");
+			if (strcmp(type(), im.type()) != 0)
+				throw std::logic_error("[Error] Invalid im's type.");
 			_height = im._height;
 			_width = im._width;
 			_channels = im._channels;
-			_data = new T * [_channels];
 			_refNum = 1;
 			size_t fLen = _height * _width;
+			_data = new T * [_channels];
 			for (int i = 0; i < _channels; ++i)
 			{
 				_data[i] = new T[fLen];
 				for (int j = 0; j < fLen; ++j)
 					_data[i][j] = im._data[i][j];
 			}
-			im._refNum++;
 		}
 		// 析构函数
 		~Img()
 		{
-			if (_data != nullptr && --_refNum == 0)
+			if (--_refNum == 0)
 			{
 				for (int i = 0; i < _channels; ++i)
 					delete[] _data[i];
 				delete[] _data;
 			}
 		}
-		// 赋值操作
-		Img& operator=(const Img& im)
+		// 赋值操作，浅拷贝
+		Img<T, C>& operator=(const Img<T, C>& im)
 		{
-			if (this != &im)
+			if(this != &im)
 			{
-				if (_data != nullptr && --_refNum == 0)
+				if (im._channels != C)
+					throw std::logic_error("[Error] Invalid im's channels.");
+				if (strcmp(type(), im.type()) != 0)
+					throw std::logic_error("[Error] Invalid im's type.");
+				if (--_refNum == 0)
 				{
 					for (int i = 0; i < _channels; ++i)
 						delete[] _data[i];
 					delete[] _data;
 				}
-				_channels = im._channels;
-				return new Img(im);
+				_height = im._height;
+				_width = im._width;
+				_data = im._data;
+				_refNum = im._refNum++;
 			}
 			return *this;
 		}
-
-		//// TODO: 操作符重载
-		//void operator+(const Img& im) { }
-		//void operator+(T val) { }
-		//void operator-(const Img& im) { }
-		//void operator-(T val) { }
-		//void operator*(const Img& im) { }
-		//void operator*(T val) { }
-		//void operator/(const Img& im) { }
-		//void operator/(T val) { }
-
-		// 初始化
-		void init(size_t height, size_t width)
+		// +=操作符重载
+		Img<T, C>& operator+=(const Img<T, C>& im)
 		{
-			_height = height;
-			_width = width;
+			if (!sameAs(im))
+				throw std::logic_error("[Error] Mismatched img.");
+			size_t fLen = im._height * im._width;
+			for (int i = 0; i < im._channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] + im._data[i][j]);
+			return *this;
+		}
+		Img<T, C>& operator+=(T val)
+		{ 
+			size_t fLen = _height * _width;
 			for (int i = 0; i < _channels; ++i)
-			{
-				if (_data[i] != nullptr)
-					delete[] _data[i];
-				_data[i] = new T[_height * _width];
-			}
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] + val);
+			return *this;
+		}
+		// -=操作符重载
+		Img<T, C>& operator-=(const Img<T, C>& im) 
+		{ 
+			if (!sameAs(im))
+				throw std::logic_error("[Error] Mismatched img.");
+			size_t fLen = im._height * im._width;
+			for (int i = 0; i < im._channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] - im._data[i][j]);
+			return *this;
+		}
+		Img<T, C>& operator-=(T val) 
+		{ 
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] - val);
+			return *this;
+		}
+		// *=操作符重载
+		Img<T, C>& operator*=(const Img<T, C>& im) 
+		{ 
+			if (!sameAs(im))
+				throw std::logic_error("[Error] Mismatched img.");
+			size_t fLen = im._height * im._width;
+			for (int i = 0; i < im._channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] * im._data[i][j]);
+			return *this;
+		}
+		Img<T, C>& operator*=(T val) 
+		{ 
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] * val);
+			return *this;
+		}
+		// /=操作符重载
+		Img<T, C>& operator/=(const Img<T, C>& im) 
+		{ 
+			if (!sameAs(im))
+				throw std::logic_error("[Error] Mismatched img.");
+			size_t fLen = im._height * im._width;
+			for (int i = 0; i < im._channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] / im._data[i][j]);
+			return *this;
+		}
+		Img<T, C>& operator/=(T val) 
+		{ 
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					_data[i][j] = T(_data[i][j] / val);
+			return *this;
 		}
 		// 获取宽度
 		size_t height() const { return _height; }
@@ -202,40 +258,80 @@ namespace tcv
 			return mats;
 		}
 		// 获取某个像素值，不可修改
-		T at(size_t col, size_t row, size_t ch) const
+		T at(size_t col, size_t row, size_t ch = 0) const
 		{
-			if (col < 0 || col >= _height || row < 0 || row >= _width || \
-				ch < 0 || ch >= _channels)
-				throw std::out_of_range("[Error] Invalid `col` or `row` or `ch`.");
+			if (ch < 0 || ch >= _channels)
+				throw std::out_of_range("[Error] Invalid `ch`.");
+			if (col < 0 || col >= _height)
+				throw std::out_of_range("[Error] Invalid `col`.");
+			if (row < 0 || row >= _width)
+				throw std::out_of_range("[Error] Invalid `row`.");
 			return _data[ch][col * _width + row];
 		}
 		// 获取某个像素值，可修改
-		T& at(size_t col, size_t row, size_t ch)
+		T& at(size_t col, size_t row, size_t ch = 0)
 		{
-			if (col < 0 || col >= _height || row < 0 || row >= _width || \
-				ch < 0 || ch >= _channels)
-				throw std::out_of_range("[Error] Invalid `col` or `row` or `ch`.");
+			if (ch < 0 || ch >= _channels)
+				throw std::out_of_range("[Error] Invalid `ch`.");
+			if (col < 0 || col >= _height)
+				throw std::out_of_range("[Error] Invalid `col`.");
+			if (row < 0 || row >= _width)
+				throw std::out_of_range("[Error] Invalid `row`.");
 			return _data[ch][col * _width + row];
 		}
-
-		//// TODO: 统计方法
-		//void stateMinMax(double* min, double* max) { }
-		//void stateMeanStd(double* mean, double* std) { }
-
-		// 新建等尺寸全0图像
-		static Img& zerosLike(const Img& im)
+		// 比较两个图像的信息是否相同，不包括具体数据
+		bool sameAs(const Img<T, C>& im)
 		{
-			return new Img(im._height, im._width, 0);
+			if (_height != im._height || _width != im._width || \
+				_channels != im._channels || type() != im.type())
+				return false;
+			return true;
+		}
+		// 最大最小值计算
+		void stateMinMax(double* min, double* max) 
+		{
+			*min = std::numeric_limits<T>::max();
+			*max = std::numeric_limits<T>::min();
+			size_t fLen = _height * _width;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+				{
+					if (_data[i][j] < *min)
+						*min = _data[i][j];
+					else if (_data[i][j] > *max)
+						*max = _data[i][j];
+				}
+		}
+		// 均值标准差计算
+		void stateMeanStd(double* mean, double* stdev) 
+		{
+			*mean = 0;
+			*stdev = 0;
+			size_t fLen = _height * _width;
+			double num = _channels * fLen;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					*mean += _data[i][j];
+			*mean /= num;
+			for (int i = 0; i < _channels; ++i)
+				for (int j = 0; j < fLen; ++j)
+					*stdev += std::pow(_data[i][j] - *mean, 2);
+			*stdev = std::sqrt(*stdev / num);
+		}
+		// 新建等尺寸全0图像
+		Img<T, C>& zerosLike()
+		{
+			return *(new Img<T, C>(_height, _width, 0));
 		}
 		// 新建等尺寸全1图像
-		static Img& onesLike(const Img& im)
+		Img<T, C>& onesLike()
 		{
-			return new Img(im._height, im._width, 1);
+			return *(new Img<T, C>(_height, _width, 1));
 		}
 	};
 
 	template<typename U, size_t N>
-	DLL_SPEC inline std::ostream& operator<<(std::ostream& os, const Img<U, N>& im)
+	inline DLL_SPEC std::ostream& operator<<(std::ostream& os, const Img<U, N>& im)
 	{
 		os << "Shape: (" << im._height << ", " << im._width << ", "
 			<< im._channels << ")\n";
@@ -260,10 +356,35 @@ namespace tcv
 		}
 		os << "]";
 		return os;
-	}
+	};
 
-	// 预定义常规图像
-	typedef Img<type::U8, 1> ImgGray;
-	typedef Img<type::U8, 3> ImgRGB;
-	typedef Img<type::U8, 4> ImgRGBA;
+	// 预定义图像
+	typedef Img<type::U8, 1> ImgU8C1;
+	typedef Img<type::U8, 2> ImgU8C2;
+	typedef Img<type::U8, 3> ImgU8C3;
+	typedef Img<type::U8, 4> ImgU8C4;
+	typedef Img<type::S8, 1> ImgS8C1;
+	typedef Img<type::S8, 2> ImgS8C2;
+	typedef Img<type::S8, 3> ImgS8C3;
+	typedef Img<type::S8, 4> ImgS8C4;
+	typedef Img<type::U16, 1> ImgU16C1;
+	typedef Img<type::U16, 2> ImgU16C2;
+	typedef Img<type::U16, 3> ImgU16C3;
+	typedef Img<type::U16, 4> ImgU16C4;
+	typedef Img<type::S16, 1> ImgS16C1;
+	typedef Img<type::S16, 2> ImgS16C2;
+	typedef Img<type::S16, 3> ImgS16C3;
+	typedef Img<type::S16, 4> ImgS16C4;
+	typedef Img<type::S32, 1> ImgS32C1;
+	typedef Img<type::S32, 2> ImgS32C2;
+	typedef Img<type::S32, 3> ImgS32C3;
+	typedef Img<type::S32, 4> ImgS32C4;
+	typedef Img<type::F32, 1> ImgF32C1;
+	typedef Img<type::F32, 2> ImgF32C2;
+	typedef Img<type::F32, 3> ImgF32C3;
+	typedef Img<type::F32, 4> ImgF32C4;
+	typedef Img<type::F64, 1> ImgF64C1;
+	typedef Img<type::F64, 2> ImgF64C2;
+	typedef Img<type::F64, 3> ImgF64C3;
+	typedef Img<type::F64, 4> ImgF64C4;
 }
