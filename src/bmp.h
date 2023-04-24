@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
+#include "im.hpp"
 
 #undef DLL_SPEC
 #if defined (WIN32)
@@ -15,49 +16,31 @@
 
 namespace tcv
 {
-	struct DLL_SPEC RGBTriple
+	namespace bmp
 	{
-		unsigned char blue;
-		unsigned char green;
-		unsigned char red;
-	};
-
-//#pragma pack(2)
-	struct DLL_SPEC BmpFileHeader
-	{
-		unsigned short bfType;
-		unsigned int bfSize;
-		unsigned short bfReserved1;
-		unsigned short bfReserved2;
-		unsigned int bfOffBits;
-	};
-
-	struct DLL_SPEC BmpFileInFoHeader
-	{
-		unsigned int biSize;
-		int biWidth = 0, biHeight = 0;
-		unsigned short biPlanes;
-		unsigned short biBitCount;
-		unsigned int biCompression, biSizeImages;
-		int biXPelsPerMeter, biYPelsPerMeter;
-		unsigned int biClrUsed, biClrImportant;
-	};
-
-	class DLL_SPEC BMP
-	{
-	private:
 		const int TYPE = 19778;
-		int offset;  // 行尾的空隙
-		RGBTriple* surface;  // 存图片颜色数据的数组
-		BmpFileHeader fileHeader;  // 文件头
-		BmpFileInFoHeader fileInFoHeader;  // 数据头
 
-	public:
-		// 读文件
-		void read(const char* fileName);
-		// 写文件
-		void write(void (*myMethod)(int, int, RGBTriple*), const char* outFileName);
-		// 获取数据
-		RGBTriple* array();
-	};
+#pragma pack(2)
+		struct DLL_SPEC FileHeader
+		{
+			unsigned short bfType = 0;
+			unsigned int bfSize = 0;
+			unsigned short bfReserved1 = 0;
+			unsigned short bfReserved2 = 0;
+			unsigned int bfOffBits = 0;
+		};
+
+		struct DLL_SPEC FileInFoHeader
+		{
+			unsigned int biSize = 0;
+			int biWidth = 0, biHeight = 0;
+			unsigned short biPlanes = 0;
+			unsigned short biBitCount = 0;
+			unsigned int biCompression = 0, biSizeImages = 0;
+			int biXPelsPerMeter = 0, biYPelsPerMeter = 0;
+			unsigned int biClrUsed = 0, biClrImportant = 0;
+		};
+
+		DLL_SPEC tcv::ImU8* readRGB(const char* fileName);
+	}
 }

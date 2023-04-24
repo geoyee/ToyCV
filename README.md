@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <article style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <img src="https://user-images.githubusercontent.com/71769312/233330675-dd8df43b-232c-4efd-8128-9063c2f4e9cb.svg"/>
       <h1 style="width: 100%; text-align: center;">ToyCV</h1>
@@ -29,6 +29,12 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=<安装路径> ..
 make && make install
 ```
+
+## 🤪TODO
+
+- [x] 完成基本的图像类`Im`
+- [ ] 完成`bmp`的读取和保存
+- [ ] 完成简单的图像处理
 
 ## 🤔参考
 

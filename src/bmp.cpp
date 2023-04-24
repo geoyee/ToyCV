@@ -1,45 +1,36 @@
-#if defined (WIN32)
-#define DLL_DEFINE
-#endif
-
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
+#include <exception>
 #include "bmp.h"
 
-void tcv::BMP::read(const char* fileName)
+tcv::ImU8* tcv::bmp::readRGB(const char* fileName)
 {
+	int offset;                          // 行尾的空隙
+	bmp::FileHeader fileHeader;          // 文件头
+	bmp::FileInFoHeader fileInFoHeader;  // 数据头
 	std::fstream ifs;
 	ifs.open(fileName, std::ios::in | std::ios::binary);
 	if (!ifs.is_open())
-	{
-		std::cout << "Can't open the file." << std::endl;
-		return;
-	}
-	ifs.read((char*)&fileHeader, sizeof(BmpFileHeader));
-	if (fileHeader.bfType != BMP::TYPE)
-	{
-		std::cout << "Type error, " << fileHeader.bfType
-			<< " != " << BMP::TYPE << std::endl;
-		return;
-	}
-	ifs.read((char*)&fileInFoHeader, sizeof(BmpFileInFoHeader));
+		throw std::invalid_argument("Can't open the file.");
+	ifs.read((char*)&fileHeader, sizeof(tcv::bmp::FileHeader));
+	if (fileHeader.bfType != tcv::bmp::TYPE)
+		throw std::invalid_argument("Type error.");
+	ifs.read((char*)&fileInFoHeader, sizeof(tcv::bmp::FileInFoHeader));
 	if (fileInFoHeader.biBitCount != 24)
-	{
-		std::cout << "Invalid, " << fileInFoHeader.biBitCount
-			<< " != 24" << std::endl;
-		return;
-	}
+		throw std::invalid_argument("Invalid biBitCount.");
 	offset = (fileInFoHeader.biWidth * 3) % 4;
 	if (offset != 0)
 		offset = 4 - offset;
-	surface = new RGBTriple[
-		size_t(fileInFoHeader.biHeight) * size_t(fileInFoHeader.biWidth)];
+	size_t fLen = size_t(fileInFoHeader.biHeight) * size_t(fileInFoHeader.biWidth);
+	tcv::type::U8** surface = new tcv::type::U8 * [fLen];
+	for (size_t i = 0; i < fLen; ++i)
+		surface[i] = new tcv::type::U8[3];
 	for (int i = fileInFoHeader.biHeight - 1; i >= 0; --i)
 	{
 		for (int j = 0; j < fileInFoHeader.biWidth; ++j)
 			ifs.read(
-				(char*)(surface + (size_t(fileInFoHeader.biWidth) * i + j)),
-				sizeof(RGBTriple)
+				(char*)surface[i * size_t(fileInFoHeader.biWidth) + j],
+				sizeof(tcv::type::U8[3])
 			);
 		if (offset != 0)
 		{
@@ -48,35 +39,13 @@ void tcv::BMP::read(const char* fileName)
 				ifs.read(&ign, sizeof(char));
 		}
 	}
-	ifs.close();
-}
-
-void tcv::BMP::write(void (*preMethod)(int, int, RGBTriple*), const char* outFileName)
-{
-	preMethod(fileInFoHeader.biHeight, fileInFoHeader.biWidth, surface);
-	std::ofstream ofs;
-	ofs.open(outFileName, std::ios::out | std::ios::binary);
-	ofs.write((char*)&fileHeader, sizeof(BmpFileHeader));
-	ofs.write((char*)&fileInFoHeader, sizeof(BmpFileInFoHeader));
-	for (int i = fileInFoHeader.biHeight - 1; i >= 0; --i)
-	{
-		for (int j = 0; j < fileInFoHeader.biWidth; ++j)
-			ofs.write(
-				(char*)(surface + (size_t(fileInFoHeader.biWidth) * i + j)),
-				sizeof(RGBTriple)
-			);
-		if (offset != 0)
-		{
-			char ign = 0;
-			for (int k = 0; k < offset; ++k)
-				ofs.write(&ign, sizeof(char));
-		}
-	}
+	ImU8* img = new ImU8(
+		size_t(fileInFoHeader.biHeight),
+		size_t(fileInFoHeader.biWidth),
+		3, surface, false);
+	for (size_t i = 0; i < fLen; ++i)
+		delete[] surface[i];
 	delete[] surface;
-	ofs.close();
-}
-
-tcv::RGBTriple* tcv::BMP::array()
-{
-	return surface;
+	ifs.close();
+	return img;
 }

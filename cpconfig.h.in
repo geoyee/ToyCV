@@ -1,1 +1,1 @@
-#cmakedefine WIN32 @WIN32@
+﻿#cmakedefine WIN32 @WIN32@
