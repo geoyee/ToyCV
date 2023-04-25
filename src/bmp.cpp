@@ -67,13 +67,15 @@ void tcv::bmp::saveRGB(
 	int offset = (header.info.biWidth * 3) % 4;
 	if (offset != 0)
 		offset = 4 - offset;
-	for (int i = header.info.biHeight - 1; i >= 0; i--) 
+	for (int i = header.info.biHeight - 1; i >= 0; --i) 
 	{
-		for (int j = 0; j < header.info.biWidth; j++)
-			ofs.write(
-				(char*)(im->data(i, j, 0, 0)[0]),
-				sizeof(tcv::type::U8[3])
-			);
+		for (int j = 0; j < header.info.biWidth; ++j)
+		{
+			tcv::type::U8 rgb[3];
+			for (int k = 0; k < 3; ++k)
+				rgb[k] = im->at(i, j, k);
+			ofs.write((char*)(rgb), sizeof(tcv::type::U8[3]));
+		}
 		if (offset != 0) 
 		{
 			char ign = 0;

@@ -325,7 +325,7 @@ namespace tcv
 					_data[i][j] = T(_data[i][j] + im._data[i][j]);
 			return *this;
 		}
-		Im<T>& operator+=(T val)
+		Im<T>& operator+=(double val)
 		{
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
@@ -344,7 +344,7 @@ namespace tcv
 					_data[i][j] = T(_data[i][j] - im._data[i][j]);
 			return *this;
 		}
-		Im<T>& operator-=(T val)
+		Im<T>& operator-=(double val)
 		{
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
@@ -363,7 +363,7 @@ namespace tcv
 					_data[i][j] = T(_data[i][j] * im._data[i][j]);
 			return *this;
 		}
-		Im<T>& operator*=(T val)
+		Im<T>& operator*=(double val)
 		{
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
@@ -382,7 +382,7 @@ namespace tcv
 					_data[i][j] = T(_data[i][j] / im._data[i][j]);
 			return *this;
 		}
-		Im<T>& operator/=(T val)
+		Im<T>& operator/=(double val)
 		{
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
@@ -433,7 +433,7 @@ namespace tcv
 			T** mats = new T * [channels()];
 			for (int c = 0; c < channels(); ++c)
 			{
-				mats[c] = new T[(xOff + 1) * (yOff + 1)];
+				mats[c] = new T[size_t(xOff + 1) * size_t(yOff + 1)];
 				size_t k = 0;
 				for (size_t i = x; i <= x + xOff; ++i)
 					for (size_t j = y; j <= y + yOff; ++j)
@@ -453,7 +453,7 @@ namespace tcv
 			if (ch < 0 || ch >= channels())
 				throw std::range_error("[Error] Invalid ch.");
 			T** mats = new T * [1];
-			mats[0] = new T[(xOff + 1) * (yOff + 1)];
+			mats[0] = new T[size_t(xOff + 1) * size_t(yOff + 1)];
 			size_t k = 0;
 			for (size_t i = x; i <= x + xOff; ++i)
 				for (size_t j = y; j <= y + yOff; ++j)
