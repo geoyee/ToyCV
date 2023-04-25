@@ -18,29 +18,40 @@ namespace tcv
 {
 	namespace bmp
 	{
-		const int TYPE = 19778;
+		const int BF_TYPE = 0x4D42;
 
 #pragma pack(2)
-		struct DLL_SPEC FileHeader
+		struct DLL_SPEC _File
 		{
-			unsigned short bfType = 0;
+			unsigned short bfType = 19778;
 			unsigned int bfSize = 0;
 			unsigned short bfReserved1 = 0;
 			unsigned short bfReserved2 = 0;
 			unsigned int bfOffBits = 0;
 		};
 
-		struct DLL_SPEC FileInFoHeader
+		struct DLL_SPEC _Info
 		{
-			unsigned int biSize = 0;
-			int biWidth = 0, biHeight = 0;
-			unsigned short biPlanes = 0;
-			unsigned short biBitCount = 0;
-			unsigned int biCompression = 0, biSizeImages = 0;
-			int biXPelsPerMeter = 0, biYPelsPerMeter = 0;
-			unsigned int biClrUsed = 0, biClrImportant = 0;
+			unsigned int biSize = 40;
+			int biWidth = 0;
+			int biHeight = 0;
+			unsigned short biPlanes = 1;
+			unsigned short biBitCount = 24;
+			unsigned int biCompression = 0;
+			unsigned int biSizeImage = 0;
+			int biXPelsPerMeter = 0;
+			int	biYPelsPerMeter = 0;
+			unsigned int biClrUsed = 0;
+			unsigned int biClrImportant = 0;
 		};
 
-		DLL_SPEC tcv::ImU8* readRGB(const char* fileName);
+		struct DLL_SPEC Header
+		{
+			_File file;
+			_Info info;
+		};
+
+		DLL_SPEC tcv::ImU8* LoadRGB(const char* fileName, Header* header);
+		DLL_SPEC void saveRGB(const char* fileName, const tcv::ImU8* im, Header header);
 	}
 }

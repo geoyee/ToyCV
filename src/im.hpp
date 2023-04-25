@@ -433,10 +433,10 @@ namespace tcv
 			T** mats = new T * [channels()];
 			for (int c = 0; c < channels(); ++c)
 			{
-				mats[c] = new T[xOff * yOff];
+				mats[c] = new T[(xOff + 1) * (yOff + 1)];
 				size_t k = 0;
-				for (size_t i = x; i < x + xOff; ++i)
-					for (size_t j = y; j < y + yOff; ++j)
+				for (size_t i = x; i <= x + xOff; ++i)
+					for (size_t j = y; j <= y + yOff; ++j)
 					{
 						mats[0][k] = _data[0][i * width() + j];
 						k++;
@@ -453,10 +453,10 @@ namespace tcv
 			if (ch < 0 || ch >= channels())
 				throw std::range_error("[Error] Invalid ch.");
 			T** mats = new T * [1];
-			mats[0] = new T[xOff * yOff];
+			mats[0] = new T[(xOff + 1) * (yOff + 1)];
 			size_t k = 0;
-			for (size_t i = x; i < x + xOff; ++i)
-				for (size_t j = y; j < y + yOff; ++j)
+			for (size_t i = x; i <= x + xOff; ++i)
+				for (size_t j = y; j <= y + yOff; ++j)
 				{
 					mats[0][k] = _data[0][i * width() + j];
 					k++;
