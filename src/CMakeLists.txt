@@ -9,7 +9,7 @@ CONFIGURE_FILE(
 # 将二进制的文件树包含到文件的搜索路径中，这样才能找到ProjrctConfig.h
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
-SET(LIB_SRC bmp.cpp)
+SET(LIB_SRC bmp.cpp func.cu)
 SET(LIB_HEAD bmp.h im.hpp)
 
 SET(OBJ_NAME ${PORJ_NAME}_obj)

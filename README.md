@@ -5,7 +5,7 @@
   </article>
 </div>
 
-ToyCV是一个无第三方库依赖的C++图像处理玩具库（除了拿来玩没啥用），作为我在学习C++和CMake等工具的过程中的练习项目。 这个自我感觉还不错的LOGO也来自学习[Inkscape](https://gitlab.com/inkscape/inkscape)的过程中自己画的。
+ToyCV是一个无第三方库依赖的C++图像处理玩具库（除了拿来玩没啥用），作为我在学习C++、CMake和CUDA等工具的过程中的练习项目。 这个自我感觉还不错的LOGO也来自学习[Inkscape](https://gitlab.com/inkscape/inkscape)的过程中自己画的。
 
 ## 🤡编译使用
 
@@ -34,7 +34,7 @@ make && make install
 
 - [x] 完成基本的图像类`Im`
 - [x] 完成简单的24位`bmp`的读取和保存
-- [ ] 完成简单的图像处理
+- [ ] 使用CUDA完成几个简单的图像处理方法
 
 ## 🤡参考
 
