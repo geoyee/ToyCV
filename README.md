@@ -19,6 +19,8 @@ git clone https://github.com/geoyee/ToyCV.git
 
 目前的在Visual Studio已经支持了CMake，可以在Visual Studio加载项目，对根目录的`CMakeLists.txt`右键生成和安装即可，也可使用CMake安装。
 
+需要注意，如果使用的Visual Studio版本附带的CMake版本在3.20.3以下，需要设置`CMakeSettings.json`中的`cmakeExecutable`为新版CMake的路径，具体原因见[VS2019使用cmake构建cuda应用报错Couldn't find CUDA library root](https://blog.csdn.net/qq_39798423/article/details/130495878?spm=1001.2014.3001.5502)。
+
 - Linux
 
 使用CMake进行安装，目前只在WSL2下进行过测试，过程如下：
