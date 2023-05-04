@@ -7,16 +7,9 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "variables": [
-        {
-          "name": "CMAKE_CUDA_COMPILER_TOOLKIT_ROOT",
-          "value": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.7",
-          "type": "STRING"
-        }
-      ]
+      "cmakeExecutable": "D:/cmake/cmake-3.25.0-windows-x86_64/bin/cmake.exe"
     }
   ]
 }
