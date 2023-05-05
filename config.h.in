@@ -1,0 +1,2 @@
+﻿#cmakedefine WIN32
+#define DLL_DEFINE

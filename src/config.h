@@ -1,0 +1,1 @@
+﻿#define DLL_DEFINE

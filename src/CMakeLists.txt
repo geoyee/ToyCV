@@ -2,15 +2,15 @@
 
 # 配置一个头文件，通过该文件向源码传递CMake设置
 CONFIGURE_FILE(
-	"${PROJECT_SOURCE_DIR}/cpconfig.h.in"
-	"${PROJECT_BINARY_DIR}/cpconfig.h"
+	"${PROJECT_SOURCE_DIR}/config.h.in"
+	"${PROJECT_BINARY_DIR}/config.h"
 )
 
 # 将二进制的文件树包含到文件的搜索路径中，这样才能找到ProjrctConfig.h
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
-SET(LIB_SRC bmp.cpp func.cu)
-SET(LIB_HEAD bmp.h im.hpp)
+SET(LIB_SRC bmp.cpp funcs.cu)
+SET(LIB_HEAD types.h bmp.h funcs.h im.hpp ops.hpp)
 
 SET(OBJ_NAME ${PORJ_NAME}_obj)
 ADD_LIBRARY(${OBJ_NAME} OBJECT ${LIB_SRC})
@@ -31,4 +31,4 @@ INSTALL(TARGETS ${PORJ_NAME} ${STATIC_NAME}
 	ARCHIVE DESTINATION lib
 )
 INSTALL(FILES ${LIB_HEAD} DESTINATION "include/toycv")
-INSTALL(FILES "${PROJECT_BINARY_DIR}/cpconfig.h" DESTINATION "include/toycv")
+INSTALL(FILES "${PROJECT_BINARY_DIR}/config.h" DESTINATION "include/toycv")

@@ -6,12 +6,13 @@
 #include <exception>
 #include <limits>
 #include <malloc.h>
-#include "cpconfig.h"
+#include "config.h"
+#include "types.h"
+#include "ops.hpp"
 
 #undef DLL_SPEC
 #undef MUSIZE
 #if defined (WIN32)
-#define DLL_DEFINE
 #define MUSIZE(x) _msize(x)
 #if defined (DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
@@ -25,18 +26,6 @@
 
 namespace tcv
 {
-	// 常用图像类型
-	namespace type
-	{
-		typedef unsigned char U8;        // [0             , 255          )
-		typedef signed char S8;          // [-128          , 127          )
-		typedef unsigned short int U16;  // [0             , 65535        )
-		typedef signed short int S16;    // [-32768        , 32767        )
-		typedef signed int S32;          // [-2147483648   , 2147483647   )
-		typedef float F32;               // [1.18*10^{-38} , 3.40*10^{38} )
-		typedef double F64;              // [2.23*10^{-308}, 1.79*10^{308})
-	}
-
 	// 形状
 	struct DLL_SPEC Shape
 	{
@@ -328,9 +317,7 @@ namespace tcv
 		Im<T>& operator+=(double val)
 		{
 			size_t fLen = height() * width();
-			for (size_t i = 0; i < channels(); ++i)
-				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] + val);
+			tcv::funcs::addNumberInplace(_data, fLen, channels(), val);
 			return *this;
 		}
 		// 原址减法操作符重载

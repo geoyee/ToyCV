@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <iostream>
+#include "config.h"
 #include "im.hpp"
 
 #undef DLL_SPEC
