@@ -10,7 +10,7 @@ CONFIGURE_FILE(
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
 SET(LIB_SRC bmp.cpp funcs.cu)
-SET(LIB_HEAD types.h bmp.h funcs.h im.hpp ops.hpp)
+SET(LIB_HEAD types.h bmp.h funcs.h im.hpp ops.hpp error.cuh)
 
 SET(OBJ_NAME ${PORJ_NAME}_obj)
 ADD_LIBRARY(${OBJ_NAME} OBJECT ${LIB_SRC})
