@@ -311,12 +311,13 @@ namespace tcv
 			size_t fLen = im.height() * im.width();
 			for (size_t i = 0; i < im.channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] + im._data[i][j]);
+					_data[i][j] = static_cast<T>(_data[i][j] + im._data[i][j]);
 			return *this;
 		}
 		Im<T>& operator+=(double val)
 		{
 			size_t fLen = height() * width();
+			// FIXME: 无效
 			tcv::funcs::addNumberInplace(_data, fLen, channels(), val);
 			return *this;
 		}
@@ -328,7 +329,7 @@ namespace tcv
 			size_t fLen = im.height() * im.width();
 			for (size_t i = 0; i < im.channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] - im._data[i][j]);
+					_data[i][j] = static_cast<T>(_data[i][j] - im._data[i][j]);
 			return *this;
 		}
 		Im<T>& operator-=(double val)
@@ -336,7 +337,7 @@ namespace tcv
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] - val);
+					_data[i][j] = static_cast<T>(_data[i][j] - val);
 			return *this;
 		}
 		// 原址乘法操作符重载
@@ -347,7 +348,7 @@ namespace tcv
 			size_t fLen = im.height() * im.width();
 			for (size_t i = 0; i < im.channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] * im._data[i][j]);
+					_data[i][j] = static_cast<T>(_data[i][j] * im._data[i][j]);
 			return *this;
 		}
 		Im<T>& operator*=(double val)
@@ -355,7 +356,7 @@ namespace tcv
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] * val);
+					_data[i][j] = static_cast<T>(_data[i][j] * val);
 			return *this;
 		}
 		// 原址除法操作符重载
@@ -366,7 +367,7 @@ namespace tcv
 			size_t fLen = im.height() * im.width();
 			for (size_t i = 0; i < im.channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] / im._data[i][j]);
+					_data[i][j] = static_cast<T>(_data[i][j] / im._data[i][j]);
 			return *this;
 		}
 		Im<T>& operator/=(double val)
@@ -374,7 +375,7 @@ namespace tcv
 			size_t fLen = height() * width();
 			for (size_t i = 0; i < channels(); ++i)
 				for (size_t j = 0; j < fLen; ++j)
-					_data[i][j] = T(_data[i][j] / val);
+					_data[i][j] = static_cast<T>(_data[i][j] / val);
 			return *this;
 		}
 		// 获取形状

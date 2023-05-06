@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # In WSL
 build/
+
+# CMake in Visual Studio 2019
+CMakeSettings.json

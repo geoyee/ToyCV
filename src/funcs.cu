@@ -1,25 +1,35 @@
 ﻿#include <stdio.h>
 #include "funcs.h"
 
-// FIXME: 无法使用
+// FIXME: 加法错误
 template<typename T>
-__global__ void _addNumberInplaceKernel(T* data, size_t W, size_t H, double number)
+__global__ void _addNumberKernel(T** data, size_t W, size_t H, double number)
 {
-	const int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	data[idx] += number;
+	const int y = threadIdx.x;
+	const int x = blockIdx.x;
+	data[y][x] = static_cast<T>(data[y][x] + number);
 };
 
-// FIXME: 无法使用
+// FIXME: 无效205
 template<typename T>
 void _addNumberInplace(T** data, size_t fLen, size_t C, double val)
 {
-	T* imCuda;
-	cudaMalloc((void**)&imCuda, fLen * C * sizeof(T));
-	cudaMemcpy(imCuda, data, fLen * C * sizeof(T), cudaMemcpyHostToDevice);
-	_addNumberInplaceKernel<T><<<fLen, C>>>(imCuda, fLen, C, val);
-	cudaDeviceSynchronize();
-	cudaMemcpy(data, imCuda, fLen * C * sizeof(T), cudaMemcpyDeviceToHost);
+	T** imCpu;
+	imCpu = new T * [C];
+	for (size_t i = 0; i < C; ++i)
+		imCpu[i] = new T[fLen];
+	T** imCuda;
+	size_t pitch;
+	size_t size = sizeof(T) * fLen;
+	cudaMallocPitch((void**)&imCuda, &pitch, size, C);
+	cudaMemset2D(imCuda, pitch, 0, size, C);
+	cudaMemcpy2D(imCuda, pitch, data, size, size, C, cudaMemcpyHostToDevice);
+	_addNumberKernel<T><<<fLen, C>>>(imCuda, fLen, C, val);
+	cudaMemcpy2D(imCpu, size, imCuda, pitch, size, C, cudaMemcpyDeviceToHost);
 	cudaFree(imCuda);
+	for (int i = 0; i < 10; ++i)
+		printf("old val: %d and new val: %d\n", data[0][i], imCpu[0][i]);
+	data = imCpu;
 };
 
 // 模板特例化
