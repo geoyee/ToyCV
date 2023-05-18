@@ -8,13 +8,12 @@
 #include <malloc.h>
 #include "config.h"
 #include "types.h"
-#include "ops.hpp"
 
 #undef DLL_SPEC
 #undef MUSIZE
-#if defined (WIN32)
+#if defined(WIN32)
 #define MUSIZE(x) _msize(x)
-#if defined (DLL_DEFINE)
+#if defined(DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
 #else
 #define DLL_SPEC _declspec(dllimport)
@@ -29,22 +28,21 @@ namespace tcv
 	// 形状
 	struct DLL_SPEC Shape
 	{
-		size_t height;    // 图像高度
-		size_t width;     // 图像宽度
-		size_t channels;  // 通道数
+		size_t height;	 // 图像高度
+		size_t width;	 // 图像宽度
+		size_t channels; // 通道数
 
 		// 打印形状
 		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Shape& shp)
 		{
-			os << "Shape: (" << shp.height << ", " << \
-				shp.width << ", " << shp.channels << ")";
+			os << "Shape: (" << shp.height << ", " << shp.width << ", " << shp.channels << ")";
 			return os;
 		}
 		// 比较两个形状是否相等
 		DLL_SPEC friend bool operator==(const Shape& shp1, const Shape& shp2)
 		{
-			if (shp1.height == shp2.height && \
-				shp1.width == shp2.width && \
+			if (shp1.height == shp2.height &&
+				shp1.width == shp2.width &&
 				shp1.channels == shp2.channels)
 				return true;
 			else
@@ -53,14 +51,14 @@ namespace tcv
 
 		// 构造函数
 		Shape()
-			: height(0), width(0), channels(0) { }
+			: height(0), width(0), channels(0) {}
 		Shape(size_t h, size_t w, size_t c)
-			: height(h), width(w), channels(c) { }
+			: height(h), width(w), channels(c) {}
 		// 复制构造函数
 		Shape(const Shape& shp)
-			: height(shp.height), width(shp.width), channels(shp.channels) { }
+			: height(shp.height), width(shp.width), channels(shp.channels) {}
 		// 析构函数
-		~Shape() { }
+		~Shape() {}
 		// 赋值操作
 		Shape& operator=(const Shape& shp)
 		{
@@ -79,12 +77,12 @@ namespace tcv
 	class DLL_SPEC Im
 	{
 	private:
-		Shape _shape;            // 图像形状
-		T** _data;               // 存放数据
-		mutable size_t _refNum;  // 引用计数
+		Shape _shape;			// 图像形状
+		T** _data;				// 存放数据
+		mutable size_t _refNum; // 引用计数
 
 		// 打印信息
-		template<typename U>
+		template <typename U>
 		DLL_SPEC friend std::ostream& operator<<(std::ostream& os, const Im<U>& im)
 		{
 			{
@@ -99,7 +97,7 @@ namespace tcv
 						os << "\t\t";
 						for (size_t r = 0; r < im.width(); ++r)
 						{
-							if (strcmp(im.type(), typeid(type::U8).name()) == 0 || \
+							if (strcmp(im.type(), typeid(type::U8).name()) == 0 ||
 								strcmp(im.type(), typeid(type::S8).name()) == 0)
 								os << int(im.at(c, r, i)) << " ";
 							else
@@ -114,7 +112,7 @@ namespace tcv
 			};
 		}
 		// 加法重载
-		template<typename U>
+		template <typename U>
 		DLL_SPEC friend Im<U>& operator+(const Im<U>& im1, const Im<U>& im2)
 		{
 			if (!im1.sameAs(im2))
@@ -124,7 +122,7 @@ namespace tcv
 			return *newIm;
 		}
 		// 减法重载
-		template<typename U>
+		template <typename U>
 		DLL_SPEC friend Im<U>& operator-(const Im<U>& im1, const Im<U>& im2)
 		{
 			if (!im1.sameAs(im2))
@@ -134,7 +132,7 @@ namespace tcv
 			return *newIm;
 		}
 		// 乘法重载
-		template<typename U>
+		template <typename U>
 		DLL_SPEC friend Im<U>& operator*(const Im<U>& im1, const Im<U>& im2)
 		{
 			if (!im1.sameAs(im2))
@@ -144,7 +142,7 @@ namespace tcv
 			return *newIm;
 		}
 		// 除法重载
-		template<typename U>
+		template <typename U>
 		DLL_SPEC friend Im<U>& operator/(const Im<U>& im1, const Im<U>& im2)
 		{
 			if (!im1.sameAs(im2))
@@ -317,8 +315,9 @@ namespace tcv
 		Im<T>& operator+=(double val)
 		{
 			size_t fLen = height() * width();
-			// FIXME: 无效
-			tcv::funcs::addNumberInplace(_data, fLen, channels(), val);
+			for (size_t i = 0; i < channels(); ++i)
+				for (size_t j = 0; j < fLen; ++j)
+					_data[i][j] = static_cast<T>(_data[i][j] + val);
 			return *this;
 		}
 		// 原址减法操作符重载

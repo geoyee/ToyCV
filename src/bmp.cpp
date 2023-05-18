@@ -34,8 +34,7 @@ tcv::ImU8* tcv::bmp::LoadRGB(const char* fileName, Header* header)
 		for (int j = 0; j < header->info.biWidth; ++j)
 			ifs.read(
 				(char*)surface[i * size_t(header->info.biWidth) + j],
-				sizeof(tcv::type::U8[3])
-			);
+				sizeof(tcv::type::U8[3]));
 		if (offset != 0)
 		{
 			char ign;
@@ -47,8 +46,7 @@ tcv::ImU8* tcv::bmp::LoadRGB(const char* fileName, Header* header)
 	tcv::ImU8* img = new tcv::ImU8(
 		size_t(header->info.biHeight),
 		size_t(header->info.biWidth),
-		3, surface, false
-	);
+		3, surface, false);
 	// 清理
 	for (size_t i = 0; i < fLen; ++i)
 		delete[] surface[i];
@@ -67,7 +65,7 @@ void tcv::bmp::saveRGB(
 	int offset = (header.info.biWidth * 3) % 4;
 	if (offset != 0)
 		offset = 4 - offset;
-	for (int i = header.info.biHeight - 1; i >= 0; --i) 
+	for (int i = header.info.biHeight - 1; i >= 0; --i)
 	{
 		for (int j = 0; j < header.info.biWidth; ++j)
 		{
@@ -76,7 +74,7 @@ void tcv::bmp::saveRGB(
 				rgb[k] = im->at(i, j, k);
 			ofs.write((char*)(rgb), sizeof(tcv::type::U8[3]));
 		}
-		if (offset != 0) 
+		if (offset != 0)
 		{
 			char ign = 0;
 			for (int k = 0; k < offset; k++)

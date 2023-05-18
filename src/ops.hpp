@@ -1,11 +1,14 @@
 ﻿#pragma once
 
+#include <iostream>
+#include <exception>
+#include "im.hpp"
 #include "funcs.h"
 #include "config.h"
 
 #undef DLL_SPEC
-#if defined (WIN32)
-#if defined (DLL_DEFINE)
+#if defined(WIN32)
+#if defined(DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
 #else
 #define DLL_SPEC _declspec(dllimport)
@@ -16,15 +19,17 @@
 
 namespace tcv
 {
-	namespace funcs
+	namespace ops
 	{
-		template<typename T>
-		DLL_SPEC void addNumberInplace(T** data, size_t fLen, size_t C, double val)
+		template <typename T>
+		DLL_SPEC tcv::Im<T>& RGB2GRAY(tcv::Im<T>& imgRGB)
 		{
-			_addNumberInplace(data, fLen, C, val);
-			// FIXME: 没有同步
-			for (int i = 0; i < 10; ++i)
-				printf("pass new val: %d\n", data[0][i]);
+			tcv::Shape shp(imgRGB.shape());
+			if (shp.channels != 3)
+				throw std::logic_error("[Error] Channels must be 3.");
+			shp.channels = 1;
+			T** newData = _RGB2GRAY(imgRGB.data(), shp.height * shp.width);
+			return *(new tcv::Im<T>(shp, newData));
 		};
 	}
 }

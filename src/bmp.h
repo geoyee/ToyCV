@@ -5,8 +5,8 @@
 #include "im.hpp"
 
 #undef DLL_SPEC
-#if defined (WIN32)
-#if defined (DLL_DEFINE)
+#if defined(WIN32)
+#if defined(DLL_DEFINE)
 #define DLL_SPEC _declspec(dllexport)
 #else
 #define DLL_SPEC _declspec(dllimport)
@@ -41,7 +41,7 @@ namespace tcv
 			unsigned int biCompression = 0;
 			unsigned int biSizeImage = 0;
 			int biXPelsPerMeter = 0;
-			int	biYPelsPerMeter = 0;
+			int biYPelsPerMeter = 0;
 			unsigned int biClrUsed = 0;
 			unsigned int biClrImportant = 0;
 		};
