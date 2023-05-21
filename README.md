@@ -5,7 +5,7 @@
   </article>
 </div>
 
-ToyCV是一个无第三方库依赖的C++图像处理玩具库（除了拿来玩没啥用），作为我在学习C++、CMake和CUDA等工具的过程中的练习项目。 这个自我感觉还不错的LOGO也来自学习[Inkscape](https://gitlab.com/inkscape/inkscape)的过程中自己画的。
+ToyCV是一个无第三方库依赖的C++图像处理玩具库（除了拿来玩没啥用），作为我在学习C++、CMake和CUDA等等工具（后续想到啥都搞上，比如pybind11等）的过程中的练习项目。 这个LOGO也来自学习[Inkscape](https://gitlab.com/inkscape/inkscape)的过程中自己画的。
 
 ## 🤡编译使用
 
