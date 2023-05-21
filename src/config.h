@@ -1,1 +1,1 @@
-﻿#define DLL_DEFINE
+﻿#define DLL_DEFINE  // cmake导出时使用

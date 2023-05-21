@@ -1,2 +1,2 @@
-﻿#cmakedefine WIN32
-#define DLL_DEFINE
+﻿#cmakedefine WIN32  // 判断平台
+#define DLL_DEFINE  // cmake导出时使用
