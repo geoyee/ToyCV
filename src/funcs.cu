@@ -2,42 +2,56 @@
 #include "funcs.h"
 #include "error.cuh"
 
-// FIXME: 每次结果都不相同且结果错误
+// FIXME: 每次结果都不相同且结果错误，应该是内存复制错误
 template <typename T>
-__global__ void RGB2GRAYKernel(T* data, T* grayData, size_t fLen, size_t pitch)
+__global__ void RGB2GRAYKernel(T** rgbData, T* grayData, size_t fLen)
 {
 	size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
 	if (idx < fLen)
 	{
-		T r = *((data + 0 * pitch) + idx);
-		T g = *((data + 1 * pitch) + idx);
-		T b = *((data + 2 * pitch) + idx);
-		printf("%d: %d, %d, %d\n", idx, r, g, b);
-		grayData[idx] = static_cast<T>(0.2989 * r + 0.5870 * g + 0.1140 * b);
+		grayData[idx] = static_cast<T>(
+			0.299 * rgbData[0][idx] + \
+			0.587 * rgbData[1][idx] + \
+			0.114 * rgbData[2][idx]
+			);
 	}
-}
+};
 
 template <typename T>
 T** _RGB2GRAY(T** data, size_t fLen)
 {
+	// 分配主机内存
 	T** grayCpu;
 	grayCpu = new T * [1];
 	grayCpu[0] = new T[fLen];
-	T* rgbCuda, * grayCuda;
-	size_t pitch;
-	size_t size = sizeof(T) * fLen;
-	CHECK(cudaMallocPitch(&rgbCuda, &pitch, size, 3));
-	CHECK(cudaMemcpy2D(rgbCuda, pitch, data, size, size, 3, cudaMemcpyHostToDevice));
-	CHECK(cudaMalloc(&grayCuda, size));
+	// 分配设备内存并拷贝主机RGB数据到设备内存
+	T** rgbCuda;
+	T** hPtrs = new T * [3];
+	for (int i = 0; i < 3; ++i)
+	{
+		T* tmpCuda;
+		CHECK(cudaMalloc(&tmpCuda, sizeof(T) * fLen));
+		CHECK(cudaMemcpy(tmpCuda, data[i], sizeof(T) * fLen, cudaMemcpyHostToDevice));
+		hPtrs[i] = tmpCuda;
+	}
+	CHECK(cudaMalloc(&rgbCuda, sizeof(T*) * 3));
+	CHECK(cudaMemcpy(rgbCuda, hPtrs, sizeof(T*) * 3, cudaMemcpyHostToDevice));
+	// 为灰度图分配设备内存
+	T* grayCuda;
+	CHECK(cudaMalloc(&grayCuda, sizeof(T) * fLen));
+	// 计算
 	int blockSize = 128;
 	int gridSize = (fLen - 1) / blockSize + 1;
 	CHECK(cudaDeviceSynchronize());
-	RGB2GRAYKernel<<<gridSize, blockSize>>>(rgbCuda, grayCuda, fLen, pitch);
+	RGB2GRAYKernel<<<gridSize, blockSize>>>(rgbCuda, grayCuda, fLen);
 	CHECK(cudaGetLastError());
 	CHECK(cudaDeviceSynchronize());
-	CHECK(cudaMemcpy(grayCpu[0], grayCuda, size, cudaMemcpyDeviceToHost));
+	// 拷贝数据回主机
+	CHECK(cudaMemcpy(grayCpu[0], grayCuda, sizeof(T) * fLen, cudaMemcpyDeviceToHost));
+	// 清理
 	CHECK(cudaFree(rgbCuda));
 	CHECK(cudaFree(grayCuda));
+	delete[] hPtrs;
 	return grayCpu;
 };
 
